@@ -3,14 +3,51 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PlanPurchase;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\PlanPurchase;
 use App\Models\ReferralHistory;
 use App\Models\LevelBonusIncome;
 
 class PlanPurchaseController extends Controller
 {
+    /**
+     * Show all purchases/plans
+     */
+    // public function index()
+    // {
+    //     $purchases = PlanPurchase::with('user')->get(); // fetch purchases with users
+    //     $user = Auth::user();
+
+
+    //     return view('user.plans', compact('purchases', 'users'));
+    // }
+
+    /**
+     * Activate a plan for a user (admin/manual activation)
+     */
+    public function activate(Request $request, $id)
+    {
+        // Find user
+        $user = Auth::user();
+
+        // Use the selected plan amount from request
+        $purchase = PlanPurchase::create([
+            'user_id'      => $user->id,
+            'plan_amount'  => $request->plan_amount,
+            'status'       => 'active',
+            'purchased_at' => now(),
+        ]);
+
+        // Distribute bonuses
+        $this->distributeLevelBonus($user, $request->plan_amount);
+
+        return redirect()->back()->with('success', 'Plan activated and bonuses distributed!');
+    }
+
+    /**
+     * Normal plan purchase (by user)
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -18,40 +55,36 @@ class PlanPurchaseController extends Controller
             'referral_code' => 'nullable|string|max:255'
         ]);
 
-        // Create the purchase
+        $buyer = Auth::user();
+
+        // Create purchase
         $purchase = PlanPurchase::create([
-            'user_id'      => Auth::id(),
+            'user_id'      =>  Auth::id(),
             'plan_amount'  => $request->plan_amount,
-            'status'       => 'pending',
+            'status'       => 'active',
             'purchased_at' => now(),
         ]);
 
-        // Buyer
-        $buyer = Auth::user();
-
-        // 🔹 Referral logic (direct referral commission)
+        // Direct referral commission
         if (!empty($request->referral_code)) {
             $referrer = User::where('refcode', $buyer->referral_by)->first();
 
             if ($referrer && $referrer->id !== $buyer->id) {
                 $commission = $request->plan_amount * 0.10; // 10%
-
-                // update referral_wallet balance
                 $referrer->increment('referral_wallet', $commission);
 
-                // store referral history
                 ReferralHistory::create([
-                    'from_user_id'     => $buyer->id,
-                    'to_user_id'       => $referrer->id,
-                    'to_user_refcode'  => $referrer->refcode,
+                    'from_user_id'      => $buyer->id,
+                    'to_user_id'        => $referrer->id,
+                    'to_user_refcode'   => $referrer->refcode,
                     'commission_amount' => $commission,
-                    'status'           => 'paid',
-                    'credited_at'      => now(),
+                    'status'            => 'paid',
+                    'credited_at'       => now(),
                 ]);
             }
         }
 
-        // 🔹 Distribute Level Staking Bonus
+        // Team bonus
         $this->distributeLevelBonus($buyer, $request->plan_amount);
 
         return response()->json([
@@ -62,7 +95,7 @@ class PlanPurchaseController extends Controller
     }
 
     /**
-     * Handle Team Staking Bonus (15 Levels)
+     * Team bonus distribution
      */
     protected function distributeLevelBonus(User $user, $planAmount)
     {
@@ -77,30 +110,27 @@ class PlanPurchaseController extends Controller
             8 => ['percent' => 4,  'direct_required' => 8],
             9 => ['percent' => 4,  'direct_required' => 9],
             10 => ['percent' => 4, 'direct_required' => 10],
-            11 => ['percent' => 1, 'direct_required' => 11],
-            12 => ['percent' => 1, 'direct_required' => 12],
-            13 => ['percent' => 1, 'direct_required' => 13],
-            14 => ['percent' => 1, 'direct_required' => 14],
-            15 => ['percent' => 1, 'direct_required' => 15],
+            11 => ['percent' => 1, 'direct_required' => 0],
+            12 => ['percent' => 1, 'direct_required' => 0],
+            13 => ['percent' => 1, 'direct_required' => 0],
+            14 => ['percent' => 1, 'direct_required' => 0],
+            15 => ['percent' => 1, 'direct_required' => 0],
         ];
 
         $parent = User::where('refcode', $user->referral_by)->first();
         $level = 1;
 
         while ($parent && $level <= 15) {
-            $rule = $bonusRules[$level];
+            $rule        = $bonusRules[$level];
             $bonusAmount = ($planAmount * $rule['percent']) / 100;
 
-            // eligibility check (direct referrals required)
-            $directs = User::where('referral_by', $parent->refcode)->count();
+            $directs  = User::where('referral_by', $parent->refcode)->count();
             $eligible = $directs >= $rule['direct_required'];
 
             if ($eligible) {
-                // Credit staking wallet
                 $parent->increment('staking_wallet', $bonusAmount);
             }
 
-            // Income record (paid / laps)
             LevelBonusIncome::create([
                 'user_id'      => $parent->id,
                 'from_user_id' => $user->id,
@@ -111,7 +141,6 @@ class PlanPurchaseController extends Controller
                 'remark'       => "Level {$level} income from user #{$user->id}",
             ]);
 
-            // Go one level up
             $parent = User::where('refcode', $parent->referral_by)->first();
             $level++;
         }

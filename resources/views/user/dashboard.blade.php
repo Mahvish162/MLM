@@ -75,8 +75,8 @@
                                     </a>
                                 </div>
                                 </div>
-                              
-                               
+
+
                             </div>
                         </div>
                     </div>
@@ -115,7 +115,9 @@
                             <div class="col-12 col-lg-6">
                                 <!-- Button -->
                                 <div class="d-sm-flex flex-row justify-content-end gap-2 ">
+
                                     <a class="btn btn-editor btn-primary mb-2" href="#!" data-bs-toggle="modal" data-bs-target="#buyCrypto">Add Plan</a>
+
                                     <a class="btn btn-editor btn-info mb-2" href="#!" role="button">Withdraw</a>
                                     <a class="btn btn-editor btn-danger mb-2" href="#!" data-bs-toggle="modal" data-bs-target="#transferCrypto">Support</a>
                                 </div>
@@ -128,7 +130,7 @@
                     </div>
                 </div>
             </div>
-        
+
         </div>
 
         <!-- Account -->
@@ -223,7 +225,7 @@
             </div>
             </div>
         </div>
-      
+
 
         <!-- TradingView Ticker -->
         <div class="container-fluid tradingview-widget-container__widget mt-2 card-bs animation-element">
@@ -279,7 +281,7 @@
                     <!--Create Form -->
                     <div class="card-bs p-2 bg-5">
                         <div class="input-group mt-2">
-                            <label class="form-label fw-bold crypt-grayscale-300">1. Price Range 
+                            <label class="form-label fw-bold crypt-grayscale-300">1. Price Range
                                 <span class="badge text-warning bg-warning bg-gradient bg-opacity-25">Trailing</span>
                             </label>
                         </div>
@@ -453,7 +455,7 @@
                         <div class="tab-pane fade pt-4" id="sell-tab-pane" role="tabpanel" aria-labelledby="sell-tab" tabindex="0">
                             <div class="d-flex flex-row align-items-center justify-content-between px-1">
                                 <label class="form-label text-sm text-light">I Want to Sell</label>
-                                <label class="form-label text-sm crypt-grayscale-600">Funding Balance: 
+                                <label class="form-label text-sm crypt-grayscale-600">Funding Balance:
                                     <span class="crypt-grayscale-300">0.00 USDT</span>
                                 </label>
                             </div>

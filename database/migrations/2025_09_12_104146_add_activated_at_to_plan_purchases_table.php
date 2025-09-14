@@ -6,21 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('plan_purchases', function (Blueprint $table) {
-            if (!Schema::hasColumn('plan_purchases', 'activated_at')) {
-                $table->timestamp('activated_at')->nullable()->after('purchased_at');
-            }
+            //
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('plan_purchases', function (Blueprint $table) {
-            if (Schema::hasColumn('plan_purchases', 'activated_at')) {
-                $table->dropColumn('activated_at');
-            }
+            //
         });
     }
 };
