@@ -8,20 +8,19 @@ use App\Models\User;
 use App\Models\PlanPurchase;
 use App\Models\ReferralHistory;
 use App\Models\LevelBonusIncome;
+use App\Models\LevelBonusHistory;
 
 class PlanPurchaseController extends Controller
 {
-    /**
-     * Show all purchases/plans
-     */
-    // public function index()
-    // {
-    //     $purchases = PlanPurchase::with('user')->get(); // fetch purchases with users
-    //     $user = Auth::user();
+
+    public function index()
+    {
+        $purchases = PlanPurchase::with('user')->get(); // fetch purchases with users
+        $user = Auth::user();
 
 
-    //     return view('user.plans', compact('purchases', 'users'));
-    // }
+        return view('user.plans', compact('purchases', 'users'));
+    }
 
     /**
      * Activate a plan for a user (admin/manual activation)
@@ -97,6 +96,7 @@ class PlanPurchaseController extends Controller
     /**
      * Team bonus distribution
      */
+
     protected function distributeLevelBonus(User $user, $planAmount)
     {
         $bonusRules = [
@@ -131,6 +131,7 @@ class PlanPurchaseController extends Controller
                 $parent->increment('staking_wallet', $bonusAmount);
             }
 
+            //  Insert into level_bonus_incomes (old table)
             LevelBonusIncome::create([
                 'user_id'      => $parent->id,
                 'from_user_id' => $user->id,
@@ -139,6 +140,17 @@ class PlanPurchaseController extends Controller
                 'amount'       => $bonusAmount,
                 'status'       => $eligible ? 'paid' : 'laps',
                 'remark'       => "Level {$level} income from user #{$user->id}",
+            ]);
+
+            //  Insert into level_bonus_histories (new table)
+            LevelBonusHistory::create([
+                'from_user_id' => $user->id,
+                'to_user_id'   => $parent->id,
+                'level'        => $level,
+                'percent'      => $rule['percent'],
+                'bonus_amount' => $bonusAmount,
+                'status'       => $eligible ? 'paid' : 'laps',
+                'credited_at'  => now(),
             ]);
 
             $parent = User::where('refcode', $parent->referral_by)->first();

@@ -22,8 +22,11 @@ Route::middleware(['auth'])->group(function () {
 // Route::post('/plans/activate', [PlanPurchaseController::class, 'activate'])
 //     ->name('plans.activate');
 
-Route::post('/plan-purchase/{id}/activate', [PlanPurchaseController::class, 'activate'])
-     ->name('plan.activate');
+// Route::post('/plan-purchase/{id}/activate', [PlanPurchaseController::class, 'activate'])
+    //  ->name('plan.activate');
 
 
 });
+
+
+///

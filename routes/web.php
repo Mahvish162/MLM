@@ -24,7 +24,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('plan.purchase.store');
 });
 
-Route::post('/plans/{id}/activate', [PlanPurchaseController::class, 'activate'])->name('plans.activate');
 
-
-
+Route::get('/plans', [PlanPurchaseController::class, 'index'])->name('plans.index');
+Route::post('/plan-purchase/activate', [PlanPurchaseController::class, 'activate'])->name('plan.activate');
